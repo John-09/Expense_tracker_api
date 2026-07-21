@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from datetime import date
+
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -10,6 +12,7 @@ from app.schemas.expense import (
 from app.services.expense_service import (
     ExpenseCategoryNotFoundError,
     ExpenseNotFoundError,
+    InvalidExpenseDateRangeError,
     create_expense,
     delete_expense,
     get_all_expenses,
@@ -30,9 +33,30 @@ router = APIRouter(
     status_code=status.HTTP_200_OK,
 )
 def list_expenses(
+    category_id: int | None = Query(
+        default=None,
+        gt=0,
+    ),
+    from_date: date | None = Query(
+        default=None,
+    ),
+    to_date: date | None = Query(
+        default=None,
+    ),
     db: Session = Depends(get_db),
 ):
-    return get_all_expenses(db)
+    try:
+        return get_all_expenses(
+            db=db,
+            category_id=category_id,
+            from_date=from_date,
+            to_date=to_date,
+        )
+    except InvalidExpenseDateRangeError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="from_date cannot be later than to_date",
+        )
 
 
 @router.get(
@@ -70,8 +94,8 @@ def add_expense(
             db=db,
             title=expense_data.title,
             amount=expense_data.amount,
-            expense_date=expense_data.date,
             description=expense_data.description,
+            expense_date=expense_data.date,
             category_id=expense_data.category_id,
         )
     except ExpenseCategoryNotFoundError:
@@ -97,8 +121,8 @@ def replace_expense(
             expense_id=expense_id,
             title=expense_data.title,
             amount=expense_data.amount,
-            expense_date=expense_data.date,
             description=expense_data.description,
+            expense_date=expense_data.date,
             category_id=expense_data.category_id,
         )
     except ExpenseNotFoundError:
@@ -133,5 +157,5 @@ def remove_expense(
         )
 
     return Response(
-        status_code=status.HTTP_204_NO_CONTENT
+        status_code=status.HTTP_204_NO_CONTENT,
     )

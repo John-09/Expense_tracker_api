@@ -1,3 +1,6 @@
+from datetime import date
+from decimal import Decimal
+
 from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
@@ -12,11 +15,45 @@ class ExpenseCategoryNotFoundError(Exception):
     pass
 
 
-def get_all_expenses(db: Session) -> list[Expense]:
+class InvalidExpenseDateRangeError(Exception):
+    pass
+
+
+def get_all_expenses(
+    db: Session,
+    *,
+    category_id: int | None = None,
+    from_date: date | None = None,
+    to_date: date | None = None,
+) -> list[Expense]:
+    if (
+        from_date is not None
+        and to_date is not None
+        and from_date > to_date
+    ):
+        raise InvalidExpenseDateRangeError
+
+    filters = []
+
+    if category_id is not None:
+        filters.append(
+            Expense.category_id == category_id
+        )
+
+    if from_date is not None:
+        filters.append(
+            Expense.date >= from_date
+        )
+
+    if to_date is not None:
+        filters.append(
+            Expense.date <= to_date
+        )
+
     statement = (
         select(Expense)
         .options(selectinload(Expense.category))
-        .order_by(Expense.date.desc(), Expense.id.desc())
+        .where(*filters)
     )
 
     return list(db.scalars(statement).all())
@@ -56,9 +93,9 @@ def create_expense(
     db: Session,
     *,
     title: str,
-    amount,
-    expense_date,
+    amount: Decimal,
     description: str | None,
+    expense_date: date,
     category_id: int,
 ) -> Expense:
     get_category_or_raise(
@@ -69,13 +106,19 @@ def create_expense(
     expense = Expense(
         title=title,
         amount=amount,
-        date=expense_date,
         description=description,
+        date=expense_date,
         category_id=category_id,
     )
 
     db.add(expense)
-    db.commit()
+
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+
     db.refresh(expense)
 
     return get_expense_by_id(
@@ -89,9 +132,9 @@ def update_expense(
     expense_id: int,
     *,
     title: str,
-    amount,
-    expense_date,
+    amount: Decimal,
     description: str | None,
+    expense_date: date,
     category_id: int,
 ) -> Expense:
     expense = get_expense_by_id(
@@ -106,11 +149,16 @@ def update_expense(
 
     expense.title = title
     expense.amount = amount
-    expense.date = expense_date
     expense.description = description
+    expense.date = expense_date
     expense.category_id = category_id
 
-    db.commit()
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+
     db.refresh(expense)
 
     return get_expense_by_id(
@@ -129,4 +177,9 @@ def delete_expense(
     )
 
     db.delete(expense)
-    db.commit()
+
+    try:
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise

@@ -106,3 +106,10 @@ class ExpenseResponse(BaseModel):
     description: str | None
     category_id: int
     category: CategoryResponse
+
+
+class ExpenseListResponse(BaseModel):
+    items: list[ExpenseResponse]
+    total: int
+    skip: int
+    limit: int
