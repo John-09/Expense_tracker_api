@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 
 from app.graphql.schema import graphql_router
+from fastapi.staticfiles import StaticFiles
 from app.routes.categories import router as categories_router
 from app.routes.expenses import router as expenses_router
 from app.routes.summary import router as summary_router
@@ -21,8 +22,11 @@ app.include_router(
 )
 
 
-@app.get("/")
-def home():
-    return {
-        "message": "Expense Tracker API is running"
-    }
+app.mount(
+    "/",
+    StaticFiles(
+        directory="frontend",
+        html=True,
+    ),
+    name="frontend",
+)
