@@ -1,8 +1,8 @@
-from datetime import date
+from datetime import date as python_date
 from decimal import Decimal
 from typing import TYPE_CHECKING
 
-from sqlalchemy import CheckConstraint, Date, ForeignKey, Numeric, Text
+from sqlalchemy import CheckConstraint, Date, ForeignKey, Numeric, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -26,6 +26,12 @@ class Expense(Base):
         primary_key=True,
     )
 
+    title: Mapped[str] = mapped_column(
+        String(150),
+        nullable=False,
+        index=True,
+    )
+
     amount: Mapped[Decimal] = mapped_column(
         Numeric(12, 2),
         nullable=False,
@@ -36,7 +42,7 @@ class Expense(Base):
         nullable=True,
     )
 
-    spent_on: Mapped[date] = mapped_column(
+    date: Mapped[python_date] = mapped_column(
         Date,
         nullable=False,
         index=True,

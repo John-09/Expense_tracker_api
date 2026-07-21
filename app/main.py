@@ -4,6 +4,7 @@ import app.models
 from app.database import Base, engine
 
 from app.routes.categories import router as categories_router
+from app.routes.expenses import router as expenses_router
 
 
 Base.metadata.create_all(bind=engine)
@@ -11,6 +12,7 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
 app.include_router(categories_router)
+app.include_router(expenses_router)
 
 
 @app.get("/")
