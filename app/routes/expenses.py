@@ -7,7 +7,6 @@ from app.database import get_db
 from app.schemas.expense import (
     ExpenseCreate,
     ExpenseResponse,
-    ExpenseUpdate,
 )
 from app.services.expense_service import (
     ExpenseCategoryNotFoundError,
@@ -112,7 +111,7 @@ def add_expense(
 )
 def replace_expense(
     expense_id: int,
-    expense_data: ExpenseUpdate,
+    expense_data: ExpenseCreate,
     db: Session = Depends(get_db),
 ):
     try:

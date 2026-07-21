@@ -90,8 +90,7 @@ def get_category_or_raise(
 
 
 def create_expense(
-    db: Session,
-    *,
+    db: Session, 
     title: str,
     amount: Decimal,
     description: str | None,

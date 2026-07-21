@@ -53,6 +53,7 @@ async function loadCategories() {
         id
         name
       }
+
     }
   `;
 

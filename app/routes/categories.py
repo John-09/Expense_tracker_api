@@ -5,7 +5,6 @@ from app.database import get_db
 from app.schemas.category import (
     CategoryCreate,
     CategoryResponse,
-    CategoryUpdate,
 )
 from app.services.category_service import (
     CategoryHasExpensesError,
@@ -85,7 +84,7 @@ def add_category(
 )
 def replace_category(
     category_id: int,
-    category_data: CategoryUpdate,
+    category_data: CategoryCreate,
     db: Session = Depends(get_db),
 ):
     try:

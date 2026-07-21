@@ -52,50 +52,6 @@ class ExpenseCreate(BaseModel):
         return cleaned_description or None
 
 
-class ExpenseUpdate(BaseModel):
-    title: str = Field(
-        min_length=1,
-        max_length=150,
-    )
-
-    amount: Decimal = Field(
-        gt=0,
-        decimal_places=2,
-    )
-
-    date: date
-
-    description: str | None = Field(
-        default=None,
-        max_length=500,
-    )
-
-    category_id: int = Field(gt=0)
-
-    @field_validator("title")
-    @classmethod
-    def validate_title(cls, value: str) -> str:
-        cleaned_title = value.strip()
-
-        if not cleaned_title:
-            raise ValueError("Expense title cannot be empty")
-
-        return cleaned_title
-
-    @field_validator("description")
-    @classmethod
-    def validate_description(
-        cls,
-        value: str | None,
-    ) -> str | None:
-        if value is None:
-            return None
-
-        cleaned_description = value.strip()
-
-        return cleaned_description or None
-
-
 class ExpenseResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -107,9 +63,3 @@ class ExpenseResponse(BaseModel):
     category_id: int
     category: CategoryResponse
 
-
-class ExpenseListResponse(BaseModel):
-    items: list[ExpenseResponse]
-    total: int
-    skip: int
-    limit: int
