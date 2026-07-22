@@ -21,7 +21,6 @@ class InvalidExpenseDateRangeError(Exception):
 
 def get_all_expenses(
     db: Session,
-    *,
     category_id: int | None = None,
     from_date: date | None = None,
     to_date: date | None = None,

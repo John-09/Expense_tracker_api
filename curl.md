@@ -6,14 +6,6 @@ curl -X POST "http://127.0.0.1:8000/categories" \
 "name": "Food"
 }'
 
-Example Response:
-
-json
-{
-"id": 1,
-"name": "Food"
-}
-
 ---
 
 # 2. Get All Categories
