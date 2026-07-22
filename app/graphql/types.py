@@ -36,51 +36,10 @@ class CategoryExpenseType:
 
 
 @strawberry.type
-class ExpenseType:
-    id: int
-    title: str
-    amount: Decimal
-    description: str | None
-    date: date
-    category_id: int
-
-    _model: strawberry.Private[Expense]
-
-    @strawberry.field
-    def category(self) -> "CategoryType":
-        return CategoryType.from_model(
-            self._model.category
-        )
-
-    @classmethod
-    def from_model(
-        cls,
-        expense: Expense,
-    ) -> "ExpenseType":
-        return cls(
-            id=expense.id,
-            title=expense.title,
-            amount=expense.amount,
-            description=expense.description,
-            date=expense.date,
-            category_id=expense.category_id,
-            _model=expense,
-        )
-
-
-@strawberry.type
 class CategoryType:
     id: int
     name: str
-
-    _model: strawberry.Private[Category]
-
-    @strawberry.field
-    def expenses(self) -> list[CategoryExpenseType]:
-        return [
-            CategoryExpenseType.from_model(expense)
-            for expense in self._model.expenses
-        ]
+    expenses: list[CategoryExpenseType]  
 
     @classmethod
     def from_model(
@@ -90,5 +49,31 @@ class CategoryType:
         return cls(
             id=category.id,
             name=category.name,
-            _model=category,
+            expenses=[
+                CategoryExpenseType.from_model(expense)
+                for expense in category.expenses
+            ],
+        )
+    
+
+@strawberry.type
+class ExpenseType:
+    id: int
+    title: str
+    amount: Decimal
+    description: str | None
+    date: date
+    category_id: int
+    category: "CategoryType"   
+
+    @classmethod
+    def from_model(cls, expense: Expense) -> "ExpenseType":
+        return cls(
+            id=expense.id,
+            title=expense.title,
+            amount=expense.amount,
+            description=expense.description,
+            date=expense.date,
+            category_id=expense.category_id,
+            category=CategoryType.from_model(expense.category),
         )
